@@ -1,0 +1,67 @@
+# Local development stack: the Validly API plus the optional services it can
+# use. Everything except the validly service is optional in production.
+# Host ports can be changed with VALIDLY_PORT, VALIDLY_METRICS_PORT,
+# POSTGRES_PORT, REDIS_PORT, MAILPIT_UI_PORT and MAILPIT_SMTP_PORT.
+name: validly
+
+services:
+  validly:
+    build:
+      context: .
+      args:
+        VERSION: local
+    image: validly:local
+    ports:
+      - "${VALIDLY_PORT:-8080}:8080" # API
+      - "${VALIDLY_METRICS_PORT:-9090}:9090" # Prometheus metrics
+    environment:
+      VALIDLY_LOG_LEVEL: info
+      VALIDLY_CORS_ORIGINS: http://localhost:5173,http://localhost:3000,http://localhost:4200
+      VALIDLY_API_KEYS: ${VALIDLY_API_KEYS:-local:local-development-key-change-me}
+      VALIDLY_ADMIN_TOKEN: ${VALIDLY_ADMIN_TOKEN:-local-admin-token-change-me-0123456789}
+      VALIDLY_REDIS_URL: redis://redis:6379/0
+      VALIDLY_DATABASE_URL: postgres://validly:validly@postgres:5432/validly?sslmode=disable
+      VALIDLY_SMTP_HOST: mailpit
+      VALIDLY_SMTP_PORT: "1025"
+      VALIDLY_SMTP_FROM: "Validly <no-reply@validly.localhost>"
+      VALIDLY_SMTP_TLS: opportunistic # Mailpit has no TLS; keep "required" in production
+      VALIDLY_VERIFICATION_URL: http://localhost:3000/verify?token={token}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mailpit:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: validly
+      POSTGRES_PASSWORD: validly
+      POSTGRES_DB: validly
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U validly -d validly"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  # Catches verification emails; open http://localhost:8025 to read them.
+  mailpit:
+    image: axllent/mailpit:v1.32
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+
+volumes:
+  postgres-data:

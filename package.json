@@ -1,0 +1,32 @@
+{
+  "name": "validly-monorepo",
+  "private": true,
+  "description": "Validly \u2014 Simple email validation for every stack.",
+  "license": "MIT",
+  "packageManager": "pnpm@12.3.4",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "build": "pnpm --filter \"./packages/**\" -r build",
+    "test": "pnpm --filter \"./packages/**\" -r test",
+    "typecheck": "pnpm --filter \"./packages/**\" -r typecheck",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "check:packages": "pnpm --filter \"./packages/**\" -r check:package",
+    "examples:build": "pnpm --filter \"./examples/**\" -r build",
+    "examples:test": "pnpm --filter \"./examples/**\" -r test",
+    "test:compat": "pnpm --filter \"./compat/**\" -r test",
+    "test:browser": "pnpm --filter @validly/core test:browser",
+    "e2e": "node scripts/e2e.mjs"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@biomejs/biome": "2.6.3",
+    "@types/node": "^24.19.2",
+    "publint": "^0.3.15",
+    "tsup": "^9.0.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

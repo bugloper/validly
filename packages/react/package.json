@@ -1,0 +1,62 @@
+{
+  "name": "@validly/react",
+  "version": "0.1.0",
+  "description": "Validly \u2014 Simple email validation for every stack. React hook with debouncing, cancellation and accessible input props.",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "react",
+    "hook"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/react"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint && attw --pack ."
+  },
+  "dependencies": {
+    "@validly/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "happy-dom": "21.0.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

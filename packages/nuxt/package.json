@@ -1,0 +1,56 @@
+{
+  "name": "@validly/nuxt",
+  "version": "0.1.0",
+  "description": "Validly \u2014 Simple email validation for every stack. Nuxt module with a server proxy route, server-only config and an auto-imported composable.",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "nuxt",
+    "nuxt-module"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/nuxt"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/module.d.ts",
+      "default": "./dist/module.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/module.js",
+  "types": "./dist/module.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.runtime.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^4.6.2",
+    "@nuxt/schema": "4.6.2",
+    "@validly/core": "workspace:^",
+    "@validly/server": "workspace:^",
+    "@validly/vue": "workspace:^"
+  },
+  "peerDependencies": {
+    "nuxt": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "h3": "1.15.11",
+    "nuxt": "^4.6.2",
+    "vue": "3.5.44"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "name": "@validly/server",
+  "version": "0.1.0",
+  "description": "Validly \u2014 Simple email validation for every stack. Server-side helpers for Node.js with Express, Fastify, Hono and NestJS adapters.",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "express",
+    "fastify",
+    "hono",
+    "nestjs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/server"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./express": {
+      "import": {
+        "types": "./dist/express.d.ts",
+        "default": "./dist/express.js"
+      },
+      "require": {
+        "types": "./dist/express.d.cts",
+        "default": "./dist/express.cjs"
+      }
+    },
+    "./fastify": {
+      "import": {
+        "types": "./dist/fastify.d.ts",
+        "default": "./dist/fastify.js"
+      },
+      "require": {
+        "types": "./dist/fastify.d.cts",
+        "default": "./dist/fastify.cjs"
+      }
+    },
+    "./hono": {
+      "import": {
+        "types": "./dist/hono.d.ts",
+        "default": "./dist/hono.js"
+      },
+      "require": {
+        "types": "./dist/hono.d.cts",
+        "default": "./dist/hono.cjs"
+      }
+    },
+    "./nestjs": {
+      "import": {
+        "types": "./dist/nestjs.d.ts",
+        "default": "./dist/nestjs.js"
+      },
+      "require": {
+        "types": "./dist/nestjs.d.cts",
+        "default": "./dist/nestjs.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint && attw --pack . --profile node16"
+  },
+  "dependencies": {
+    "@validly/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@nestjs/common": ">=12.0.0",
+    "hono": "^4.13.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": true
+    },
+    "hono": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@nestjs/common": "12.2.0",
+    "@nestjs/core": "12.2.0",
+    "@nestjs/platform-express": "12.2.0",
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.1",
+    "express": "5.3.0",
+    "fastify": "5.12.7",
+    "hono": "^4.13.14",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "7.8.2",
+    "supertest": "^7.3.1"
+  }
+}

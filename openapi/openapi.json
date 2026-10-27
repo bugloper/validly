@@ -1,0 +1,921 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Validly API",
+    "summary": "Validly — Simple email validation for every stack.",
+    "description": "Validates email syntax, checks whether a domain appears able to receive mail, flags disposable and role addresses, suggests corrections for domain typos, and offers optional ownership verification.\n\nA `deliverable` domain only means the domain publishes mail routing (MX, or an address fallback). It never proves that a specific mailbox exists; `mailbox.status` is therefore always `unverified` in validation results. Only the ownership-verification workflow establishes that someone controls an address.",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "name": "validation"
+    },
+    {
+      "name": "verification",
+      "description": "Optional. Enabled when PostgreSQL, SMTP and a verification URL are configured. Requires an API key."
+    },
+    {
+      "name": "admin",
+      "description": "Enabled when VALIDLY_ADMIN_TOKEN is set."
+    },
+    {
+      "name": "operations"
+    }
+  ],
+  "paths": {
+    "/api/v1/validate": {
+      "post": {
+        "tags": ["validation"],
+        "operationId": "validateEmail",
+        "summary": "Validate an email address",
+        "security": [
+          {},
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              },
+              "example": {
+                "email": "person@example.com",
+                "checks": {
+                  "dns": true,
+                  "disposable": true,
+                  "role": true,
+                  "typos": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result. Invalid addresses are a successful validation, not an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResult"
+                },
+                "example": {
+                  "email": "person@example.com",
+                  "syntax": {
+                    "status": "valid",
+                    "reason": null
+                  },
+                  "domain": {
+                    "normalized": "example.com",
+                    "status": "deliverable",
+                    "reason": "mx_records",
+                    "mx_found": true,
+                    "fallback_address_found": false
+                  },
+                  "disposable": {
+                    "status": "not_disposable"
+                  },
+                  "role": {
+                    "status": "not_role"
+                  },
+                  "suggestion": null,
+                  "mailbox": {
+                    "status": "unverified"
+                  },
+                  "overall_status": "domain_deliverable"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/verification/send": {
+      "post": {
+        "tags": ["verification"],
+        "operationId": "sendVerification",
+        "summary": "Email a single-use verification link",
+        "description": "Always responds 202 for a well-formed address, whether a message was sent, suppressed by the per-address rate limit, or failed, so the response reveals nothing about the address.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/verification/confirm": {
+      "post": {
+        "tags": ["verification"],
+        "operationId": "confirmVerification",
+        "summary": "Confirm a verification token",
+        "description": "Consumes the token. Unknown, expired and already-used tokens all produce the same `invalid_token` error.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The token was valid; the address is verified.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/disposable-domains": {
+      "get": {
+        "tags": ["admin"],
+        "operationId": "listDisposableDomainEntries",
+        "summary": "List administrator-managed blocklist and allowlist entries",
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainListEntries"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/disposable-domains/{list}/{domain}": {
+      "parameters": [
+        {
+          "name": "list",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": ["blocklist", "allowlist"]
+          }
+        },
+        {
+          "name": "domain",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 253
+          }
+        }
+      ],
+      "put": {
+        "tags": ["admin"],
+        "operationId": "addDisposableDomainEntry",
+        "summary": "Add a domain to a list",
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored entry (idempotent).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainListEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["admin"],
+        "operationId": "removeDisposableDomainEntry",
+        "summary": "Remove a domain from a list",
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": ["operations"],
+        "operationId": "health",
+        "summary": "Process liveness",
+        "security": [{}],
+        "responses": {
+          "200": {
+            "description": "The process is running.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "tags": ["operations"],
+        "operationId": "ready",
+        "summary": "Readiness",
+        "description": "503 while shutting down. Optional dependencies (database, Redis) are reported but do not make the service unready, because syntax and DNS validation keep working without them.",
+        "security": [{}],
+        "responses": {
+          "200": {
+            "description": "Ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Readiness"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Readiness"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "tags": ["operations"],
+        "operationId": "openapi",
+        "summary": "This document",
+        "security": [{}],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.1 document.",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API key from VALIDLY_API_KEYS."
+      },
+      "apiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Alternative to the Authorization header."
+      },
+      "adminToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "VALIDLY_ADMIN_TOKEN."
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request was malformed.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid credentials.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not found. Admin routes also return 404 when VALIDLY_ADMIN_TOKEN is not set.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "The request body exceeded the configured limit.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UnsupportedMediaType": {
+        "description": "The request body must be application/json.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds until a retry may succeed.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unavailable": {
+        "description": "The feature is not configured on this server.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Unexpected server error, e.g. the database is unreachable.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ValidateRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Validated exactly as submitted; Validly never trims or rewrites it."
+          },
+          "checks": {
+            "$ref": "#/components/schemas/Checks"
+          }
+        }
+      },
+      "Checks": {
+        "type": "object",
+        "description": "Optional stages; each defaults to true. Syntax is always evaluated.",
+        "properties": {
+          "dns": {
+            "type": "boolean",
+            "default": true
+          },
+          "disposable": {
+            "type": "boolean",
+            "default": true
+          },
+          "role": {
+            "type": "boolean",
+            "default": true
+          },
+          "typos": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "ValidationResult": {
+        "type": "object",
+        "required": ["email", "syntax", "domain", "disposable", "role", "suggestion", "mailbox", "overall_status"],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The submitted address, unmodified."
+          },
+          "syntax": {
+            "$ref": "#/components/schemas/SyntaxResult"
+          },
+          "domain": {
+            "$ref": "#/components/schemas/DomainResult"
+          },
+          "disposable": {
+            "$ref": "#/components/schemas/DisposableResult"
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleResult"
+          },
+          "suggestion": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Suggestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mailbox": {
+            "$ref": "#/components/schemas/MailboxResult"
+          },
+          "overall_status": {
+            "$ref": "#/components/schemas/OverallStatus"
+          }
+        }
+      },
+      "SyntaxResult": {
+        "type": "object",
+        "required": ["status", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/SyntaxStatus"
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SyntaxReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "SyntaxStatus": {
+        "type": "string",
+        "enum": ["valid", "invalid"]
+      },
+      "SyntaxReason": {
+        "type": "string",
+        "enum": [
+          "empty",
+          "too_long",
+          "contains_whitespace",
+          "missing_at_sign",
+          "multiple_at_signs",
+          "local_part_empty",
+          "local_part_too_long",
+          "local_part_invalid_character",
+          "local_part_dot_placement",
+          "quoted_local_part_unsupported",
+          "non_ascii_local_part_unsupported",
+          "domain_empty",
+          "domain_literal_unsupported",
+          "domain_invalid",
+          "domain_too_long",
+          "domain_label_too_long",
+          "domain_not_fully_qualified"
+        ]
+      },
+      "DomainResult": {
+        "type": "object",
+        "required": ["normalized", "status", "reason", "mx_found", "fallback_address_found"],
+        "additionalProperties": false,
+        "properties": {
+          "normalized": {
+            "type": ["string", "null"],
+            "description": "Lowercase ASCII (IDNA A-label) form of the domain, or null if the domain could not be parsed."
+          },
+          "status": {
+            "$ref": "#/components/schemas/DomainStatus"
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DomainReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mx_found": {
+            "type": ["boolean", "null"],
+            "description": "null when DNS was skipped or could not answer."
+          },
+          "fallback_address_found": {
+            "type": ["boolean", "null"],
+            "description": "Whether A/AAAA records were found in the absence of MX records. null when DNS was skipped or could not answer."
+          }
+        }
+      },
+      "DomainStatus": {
+        "type": "string",
+        "enum": ["deliverable", "undeliverable", "unknown", "skipped"],
+        "description": "`deliverable` means the domain publishes mail routing; it does not prove a mailbox exists. `unknown` means DNS could not give a reliable answer (timeout, SERVFAIL)."
+      },
+      "DomainReason": {
+        "type": "string",
+        "enum": [
+          "mx_records",
+          "address_fallback",
+          "null_mx",
+          "nxdomain",
+          "no_mail_records",
+          "non_public_address",
+          "reserved_domain",
+          "timeout",
+          "servfail",
+          "resolver_error",
+          "dns_unavailable",
+          "not_requested",
+          "syntax_invalid"
+        ],
+        "description": "Unauthenticated callers receive `dns_unavailable` instead of the specific resolver failure."
+      },
+      "DisposableResult": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/DisposableStatus"
+          }
+        }
+      },
+      "DisposableStatus": {
+        "type": "string",
+        "enum": ["disposable", "not_disposable", "skipped"]
+      },
+      "RoleResult": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/RoleStatus"
+          }
+        }
+      },
+      "RoleStatus": {
+        "type": "string",
+        "enum": ["role", "not_role", "skipped"],
+        "description": "Informational only; role addresses are not invalid."
+      },
+      "Suggestion": {
+        "type": "object",
+        "required": ["domain", "email"],
+        "additionalProperties": false,
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "description": "The submitted local part with the suggested domain. Never applied automatically."
+          }
+        }
+      },
+      "MailboxResult": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/MailboxStatus"
+          }
+        }
+      },
+      "MailboxStatus": {
+        "type": "string",
+        "enum": ["unverified", "verified"],
+        "description": "Validation results are always `unverified`; `verified` is only produced by ownership verification."
+      },
+      "OverallStatus": {
+        "type": "string",
+        "enum": ["invalid", "undeliverable", "unknown", "domain_deliverable", "syntax_valid"],
+        "description": "`syntax_valid` is returned when the DNS check was not requested. Disposable, role and suggestion results do not change the overall status; apply your own policy to them."
+      },
+      "SendVerificationRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      },
+      "SendVerificationResponse": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "accepted"
+          }
+        }
+      },
+      "ConfirmVerificationRequest": {
+        "type": "object",
+        "required": ["token"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 128
+          }
+        }
+      },
+      "ConfirmVerificationResponse": {
+        "type": "object",
+        "required": ["status", "email"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "verified"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "DomainListEntry": {
+        "type": "object",
+        "required": ["list", "domain", "created_at"],
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "type": "string",
+            "enum": ["blocklist", "allowlist"]
+          },
+          "domain": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DomainListEntries": {
+        "type": "object",
+        "required": ["entries"],
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DomainListEntry"
+            }
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok"
+          }
+        }
+      },
+      "Readiness": {
+        "type": "object",
+        "required": ["status", "checks"],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ready", "not_ready"]
+          },
+          "checks": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": ["ok", "error", "disabled"]
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "$ref": "#/components/schemas/ErrorCode"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "invalid_request",
+          "invalid_email",
+          "invalid_domain",
+          "invalid_token",
+          "unauthorized",
+          "not_found",
+          "method_not_allowed",
+          "payload_too_large",
+          "unsupported_media_type",
+          "rate_limited",
+          "verification_disabled",
+          "internal_error"
+        ]
+      }
+    }
+  }
+}

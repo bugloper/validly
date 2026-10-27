@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    // Only the tests use decorators (to declare a component under TestBed).
+    "experimentalDecorators": true
+  },
+  "include": ["src", "test"]
+}

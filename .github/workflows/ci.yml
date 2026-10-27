@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: "1.26.4"
+  NODE_VERSION: "24"
+
+jobs:
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: validly
+          POSTGRES_PASSWORD: validly
+          POSTGRES_DB: validly_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U validly" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: gofmt
+        run: test -z "$(gofmt -l cmd internal openapi tools sdk examples/go)"
+      - name: go vet
+        run: go vet ./... && (cd sdk/go && go vet ./...) && (cd examples/go && go vet ./...)
+      - name: staticcheck
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./... && (cd sdk/go && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...)
+      - name: Test (race, with PostgreSQL)
+        env:
+          VALIDLY_TEST_DATABASE_URL: postgres://validly:validly@localhost:5432/validly_test?sslmode=disable
+        run: go test -race -count=1 ./...
+      - name: Test Go SDK
+        run: cd sdk/go && go test -race -count=1 ./...
+      - name: Fuzz (short)
+        run: |
+          go test -run='^$' -fuzz=FuzzParse -fuzztime=20s ./internal/syntax
+          go test -run='^$' -fuzz=FuzzSuggest -fuzztime=10s ./internal/suggestions
+
+  node:
+    name: TypeScript packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint and format
+        run: pnpm lint
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Framework compatibility (React 18, Vue 3.4, Angular 20, Svelte 4, Solid 1.8)
+        run: pnpm test:compat
+      - name: Browser tests (Chromium)
+        run: |
+          pnpm --filter @validly/core exec playwright install --with-deps chromium
+          pnpm test:browser
+      - name: Package checks (publint, are-the-types-wrong)
+        run: pnpm check:packages
+
+  examples:
+    name: Examples and end-to-end
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: validly
+          POSTGRES_PASSWORD: validly
+          POSTGRES_DB: validly_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U validly" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Build and test every example
+        run: pnpm examples:test
+      - name: Build server-rendered examples for the end-to-end run
+        run: pnpm --filter validly-example-nestjs --filter validly-example-nextjs --filter validly-example-nuxt build
+      - name: End-to-end (real server, fake DNS, PostgreSQL, SMTP sink)
+        env:
+          VALIDLY_E2E_DATABASE_URL: postgres://validly:validly@localhost:5432/validly_e2e?sslmode=disable
+        run: pnpm e2e
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build --build-arg VERSION=${{ github.sha }} -t validly:ci .
+      - name: Smoke test
+        run: |
+          docker run -d --name validly -p 8080:8080 validly:ci
+          for i in $(seq 1 30); do curl -fs localhost:8080/healthz && break; sleep 1; done
+          curl -fs -X POST localhost:8080/api/v1/validate -H 'content-type: application/json' \
+            -d '{"email":"bad@@example.com"}' | grep -q '"overall_status":"invalid"'
+          docker stop validly

@@ -1,0 +1,64 @@
+{
+  "name": "@validly/angular",
+  "version": "0.1.0",
+  "description": "Validly \u2014 Simple email validation for every stack. Angular service, Reactive Forms async validator and signals.",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "angular",
+    "reactive-forms"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/angular"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint && attw --pack ."
+  },
+  "dependencies": {
+    "@validly/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=20.0.0",
+    "@angular/forms": ">=20.0.0",
+    "rxjs": "^7.4.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@angular/common": "22.2.3",
+    "@angular/compiler": "22.2.3",
+    "@angular/core": "22.2.3",
+    "@angular/forms": "22.2.3",
+    "@angular/platform-browser": "22.2.3",
+    "rxjs": "^7.8.2"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "validly-example-vue",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "pnpm build"
+  },
+  "dependencies": {
+    "@validly/vue": "workspace:*",
+    "vue": "3.5.44"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.10",
+    "vite": "8.3.5",
+    "vue-tsc": "3.3.13"
+  }
+}

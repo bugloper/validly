@@ -1,0 +1,58 @@
+{
+  "name": "@validly/svelte",
+  "version": "0.1.0",
+  "description": "Validly — Simple email validation for every stack. Svelte stores and an input action (Svelte 4 and 5).",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "svelte",
+    "store"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/svelte"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint && attw --pack ."
+  },
+  "dependencies": {
+    "@validly/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "svelte": "^4.0.0 || ^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "happy-dom": "21.0.4",
+    "svelte": "5.57.2"
+  }
+}

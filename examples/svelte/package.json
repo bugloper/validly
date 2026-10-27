@@ -1,0 +1,20 @@
+{
+  "name": "validly-example-svelte",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "svelte-check --tsconfig ./tsconfig.json && vite build",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "pnpm build"
+  },
+  "dependencies": {
+    "@validly/svelte": "workspace:*",
+    "svelte": "5.57.2"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "svelte-check": "4.7.7",
+    "vite": "8.3.5"
+  }
+}

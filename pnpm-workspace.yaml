@@ -1,0 +1,9 @@
+packages:
+  - packages/*
+  - examples/*
+  - compat/*
+allowBuilds:
+  "@parcel/watcher": set this to true or false
+  esbuild: true
+  lmdb: set this to true or false
+  msgpackr-extract: set this to true or false

@@ -1,0 +1,71 @@
+{
+  "name": "@validly/nextjs",
+  "version": "0.1.0",
+  "description": "Validly \u2014 Simple email validation for every stack. Next.js App Router route handler, server helpers and client hook.",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "nextjs",
+    "app-router"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/nextjs"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./server": {
+      "import": {
+        "types": "./dist/server.d.ts",
+        "default": "./dist/server.js"
+      },
+      "require": {
+        "types": "./dist/server.d.cts",
+        "default": "./dist/server.cjs"
+      }
+    },
+    "./client": {
+      "import": {
+        "types": "./dist/client.d.ts",
+        "default": "./dist/client.js"
+      },
+      "require": {
+        "types": "./dist/client.d.cts",
+        "default": "./dist/client.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint && attw --pack . --profile node16"
+  },
+  "dependencies": {
+    "@validly/core": "workspace:^",
+    "@validly/react": "workspace:^",
+    "@validly/server": "workspace:^",
+    "server-only": "^0.0.1"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.3.0",
+    "happy-dom": "21.0.4",
+    "react": "^19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

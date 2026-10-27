@@ -1,0 +1,20 @@
+{
+  "name": "validly-example-express",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@validly/server": "workspace:*",
+    "express": "5.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "supertest": "^7.3.1",
+    "@types/supertest": "^7.2.1"
+  }
+}

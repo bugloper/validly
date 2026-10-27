@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": { "analytics": false, "packageManager": "pnpm" },
+  "newProjectRoot": "projects",
+  "projects": {
+    "validly-example": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.json"
+          },
+          "configurations": {
+            "development": { "optimization": false, "sourceMap": true }
+          }
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": { "buildTarget": "validly-example:build:development", "port": 4200 }
+        }
+      }
+    }
+  }
+}

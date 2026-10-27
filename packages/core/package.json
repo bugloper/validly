@@ -1,0 +1,56 @@
+{
+  "name": "@validly/core",
+  "version": "0.1.0",
+  "description": "Validly \u2014 Simple email validation for every stack. Framework-neutral TypeScript client, types and local syntax checks.",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "validation",
+    "validly",
+    "mx",
+    "disposable"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/validly/validly.git",
+    "directory": "packages/core"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --project node",
+    "typecheck": "tsc --noEmit",
+    "check:package": "publint && attw --pack .",
+    "test:browser": "vitest run --project browser"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@vitest/browser-playwright": "5.0.5",
+    "playwright": "1.64.1"
+  }
+}

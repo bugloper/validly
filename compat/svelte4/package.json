@@ -1,0 +1,14 @@
+{
+  "name": "validly-compat-svelte4",
+  "private": true,
+  "description": "Runs the @validly/svelte test suite against Svelte 4.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@validly/svelte": "workspace:*",
+    "happy-dom": "21.0.4",
+    "svelte": "4.2.20"
+  }
+}

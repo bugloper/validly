@@ -1,0 +1,248 @@
+{
+  "description": "Shared syntax vectors for the Go server (internal/syntax) and the TypeScript client (packages/core). 'reason' is null for valid addresses. 'domain' is the expected normalized ASCII domain when the domain part parses. Cases with clientDefers=true contain internationalized domains; the TypeScript pre-check may defer them to the server instead of deciding locally.",
+  "cases": [
+    {
+      "email": "person@example.com",
+      "reason": null,
+      "domain": "example.com"
+    },
+    {
+      "email": "Person.Name+tag@Example.COM",
+      "reason": null,
+      "domain": "example.com"
+    },
+    {
+      "email": "a@b.co",
+      "reason": null,
+      "domain": "b.co"
+    },
+    {
+      "email": "x!#$%&'*+-/=?^_`{|}~@example.org",
+      "reason": null,
+      "domain": "example.org"
+    },
+    {
+      "email": "first.last@sub.domain.example",
+      "reason": null,
+      "domain": "sub.domain.example"
+    },
+    {
+      "email": "user@xn--mnchen-3ya.de",
+      "reason": null,
+      "domain": "xn--mnchen-3ya.de",
+      "clientDefers": true
+    },
+    {
+      "email": "user@münchen.de",
+      "reason": null,
+      "domain": "xn--mnchen-3ya.de",
+      "clientDefers": true
+    },
+    {
+      "email": "user@MÜNCHEN.de",
+      "reason": null,
+      "domain": "xn--mnchen-3ya.de",
+      "clientDefers": true
+    },
+    {
+      "email": "user@a-b.example.com",
+      "reason": null,
+      "domain": "a-b.example.com"
+    },
+    {
+      "email": "user@123.example",
+      "reason": null,
+      "domain": "123.example"
+    },
+    {
+      "email": "",
+      "reason": "empty"
+    },
+    {
+      "email": " person@example.com",
+      "reason": "contains_whitespace"
+    },
+    {
+      "email": "person@example.com ",
+      "reason": "contains_whitespace"
+    },
+    {
+      "email": "per son@example.com",
+      "reason": "contains_whitespace"
+    },
+    {
+      "email": "person@example.com\n",
+      "reason": "contains_whitespace"
+    },
+    {
+      "email": "personexample.com",
+      "reason": "missing_at_sign"
+    },
+    {
+      "email": "a@b@example.com",
+      "reason": "multiple_at_signs"
+    },
+    {
+      "email": "@example.com",
+      "reason": "local_part_empty",
+      "domain": "example.com"
+    },
+    {
+      "email": ".person@example.com",
+      "reason": "local_part_dot_placement",
+      "domain": "example.com"
+    },
+    {
+      "email": "person.@example.com",
+      "reason": "local_part_dot_placement",
+      "domain": "example.com"
+    },
+    {
+      "email": "per..son@example.com",
+      "reason": "local_part_dot_placement",
+      "domain": "example.com"
+    },
+    {
+      "email": "per(son)@example.com",
+      "reason": "local_part_invalid_character",
+      "domain": "example.com"
+    },
+    {
+      "email": "per,son@example.com",
+      "reason": "local_part_invalid_character",
+      "domain": "example.com"
+    },
+    {
+      "email": "per\\son@example.com",
+      "reason": "local_part_invalid_character",
+      "domain": "example.com"
+    },
+    {
+      "email": "\"quoted\"@example.com",
+      "reason": "quoted_local_part_unsupported"
+    },
+    {
+      "email": "jürgen@example.com",
+      "reason": "non_ascii_local_part_unsupported",
+      "domain": "example.com"
+    },
+    {
+      "email": "person@",
+      "reason": "domain_empty"
+    },
+    {
+      "email": "person@[192.0.2.1]",
+      "reason": "domain_literal_unsupported"
+    },
+    {
+      "email": "person@example",
+      "reason": "domain_not_fully_qualified"
+    },
+    {
+      "email": "person@localhost",
+      "reason": "domain_not_fully_qualified"
+    },
+    {
+      "email": "person@example.com.",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@.example.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@example..com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@-example.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@example-.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@exa_mple.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@192.0.2.1",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "person@example.123",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com",
+      "reason": null,
+      "domain": "example.com"
+    },
+    {
+      "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com",
+      "reason": "local_part_too_long",
+      "domain": "example.com"
+    },
+    {
+      "email": "person@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+      "reason": null,
+      "domain": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com"
+    },
+    {
+      "email": "person@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+      "reason": "domain_label_too_long"
+    },
+    {
+      "email": "a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+      "reason": "domain_too_long"
+    },
+    {
+      "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+      "reason": "too_long",
+      "domain": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com"
+    },
+    {
+      "email": "user@ab--cd.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "user@A_B.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "user@xn--abc.com",
+      "reason": "domain_invalid",
+      "clientDefers": true
+    },
+    {
+      "email": "user@XN--MNCHEN-3YA.DE",
+      "reason": null,
+      "domain": "xn--mnchen-3ya.de",
+      "clientDefers": true
+    },
+    {
+      "email": "user@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa..com",
+      "reason": "domain_label_too_long"
+    },
+    {
+      "email": "user@a..b.com",
+      "reason": "domain_invalid"
+    },
+    {
+      "email": "user@a.b.c",
+      "reason": null,
+      "domain": "a.b.c"
+    },
+    {
+      "email": "user@exa mple.com",
+      "reason": "contains_whitespace"
+    },
+    {
+      "email": "user@ｅxample.com",
+      "reason": null,
+      "domain": "example.com",
+      "clientDefers": true
+    }
+  ]
+}

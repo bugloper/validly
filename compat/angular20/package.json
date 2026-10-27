@@ -1,0 +1,19 @@
+{
+  "name": "validly-compat-angular20",
+  "private": true,
+  "description": "Runs the @validly/angular test suite against Angular 20.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@angular/common": "20.3.34",
+    "@angular/compiler": "20.3.34",
+    "@angular/core": "20.3.34",
+    "@angular/forms": "20.3.34",
+    "@angular/platform-browser": "20.3.34",
+    "@validly/angular": "workspace:*",
+    "happy-dom": "21.0.4",
+    "rxjs": "7.8.2"
+  }
+}
